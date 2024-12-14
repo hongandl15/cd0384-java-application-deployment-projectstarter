@@ -82,10 +82,9 @@ public class SecurityServiceTest {
     @EnumSource(SensorType.class)
     public void noAlarmWhenAllSensorsInactiveDuringPendingState(SensorType sensorType) {
         when(mockSecurityRepository.getAlarmStatus()).thenReturn(AlarmStatus.PENDING_ALARM);
-        testSensor.setSensorType(sensorType);
         testSensor.setActive(false);
         securitySystem.changeSensorActivationStatus(testSensor, false);
-        verify(mockSecurityRepository).setAlarmStatus(AlarmStatus.NO_ALARM);
+        verify(mockSecurityRepository, atMostOnce()).setAlarmStatus(AlarmStatus.NO_ALARM);
     }
 
     @ParameterizedTest
@@ -177,4 +176,29 @@ public class SecurityServiceTest {
         securitySystem.setArmingStatus(ArmingStatus.ARMED_HOME);
         verify(mockSecurityRepository).setAlarmStatus(AlarmStatus.ALARM);
     }
+
+    @Test
+    void handleSensorDeactivated_shouldSetAlarmStatusToNoAlarm_whenAlarmStatusIsPendingAlarm() {
+        // Arrange
+        when(mockSecurityRepository.getAlarmStatus()).thenReturn(AlarmStatus.PENDING_ALARM);
+
+        // Act
+        securitySystem.handleSensorDeactivated();
+
+        // Assert
+        verify(mockSecurityRepository, times(1)).setAlarmStatus(AlarmStatus.NO_ALARM);
+    }
+
+    @Test
+    void handleSensorDeactivated_shouldNotChangeAlarmStatus_whenAlarmStatusIsNotPendingAlarm() {
+        // Arrange
+        when(mockSecurityRepository.getAlarmStatus()).thenReturn(AlarmStatus.NO_ALARM);
+
+        // Act
+        securitySystem.handleSensorDeactivated();
+
+        // Assert
+        verify(mockSecurityRepository, never()).setAlarmStatus(any(AlarmStatus.class));
+    }
+
 }

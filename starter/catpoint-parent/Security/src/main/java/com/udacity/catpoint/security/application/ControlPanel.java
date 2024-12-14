@@ -18,10 +18,14 @@ public class ControlPanel extends JPanel {
     private SecurityService securityService;
     private Map<ArmingStatus, JButton> buttonMap;
 
+    private SensorPanel sPanel;
 
-    public ControlPanel(SecurityService securityService) {
+
+    public ControlPanel(SecurityService securityService, SensorPanel sPanel) {
         super();
         setLayout(new MigLayout());
+
+        this.sPanel = sPanel;
         this.securityService = securityService;
 
         JLabel panelLabel = new JLabel("System Control");
@@ -38,6 +42,7 @@ public class ControlPanel extends JPanel {
             v.addActionListener(e -> {
                 securityService.setArmingStatus(k);
                 buttonMap.forEach((status, button) -> button.setBackground(status == k ? status.getColor() : null));
+                sPanel.sensorStatusChanged();
             });
         });
 
